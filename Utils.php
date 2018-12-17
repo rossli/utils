@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: SuperJu
  * Date: 2017/12/28
- * Time: 下午2:02
+ * Time: 锟斤拷锟斤拷2:02
  */
 
 namespace App\Utils;
@@ -103,20 +103,6 @@ class Utils
         return $contents;
     }
 
-    /**
-     * 设置中奖概率
-     * @param $value  中奖概率
-     *
-     * @return bool
-     */
-    public static function lottery($value)
-    {
-        $rand = rand(0,100);
-        if ($rand < $value) {
-            return true;
-        }
-        return false;
-    }
 
 
 }
