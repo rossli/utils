@@ -103,6 +103,29 @@ class Utils
         return $contents;
     }
 
+    /*
+        *	规范化 URL
+        *	判断是否使用 HTTPS 链接，当是 HTTPS 访问时候自动添加
+        *	自动添加链接前面的 http://
+        *	$slash 是判断是否要后面添加斜杠
+        */
+    public static function format_url($url,$slash=false)
+    {
+
+        if (substr($url,0,4)!='http') {
+            @$if_https = $_SERVER['HTTPS'];	//这样就不会有错误提示
+            if ($if_https) {	//如果是使用 https 访问的话就添加 https
+                $url='https:'.$url;
+            } else {
+                $url='http:'.$url;
+            }
+        }
+        if ($slash) {
+            $url = rtrim($url,'/').'/';
+        }
+        return $url;
+    }
+
 
 
 }
