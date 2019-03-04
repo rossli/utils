@@ -13,16 +13,10 @@ use Hashids\Hashids;
 class Utils
 {
 
-
-
-
     public static function isMobile($string)
     {
         return preg_match("/^1[0-9]{2}[0-9]{8}$|15[0189]{1}[0-9]{8}$|189[0-9]{8}$/", $string);
     }
-
-
-
 
 
     /**
@@ -124,6 +118,18 @@ class Utils
             $url = rtrim($url,'/').'/';
         }
         return $url;
+    }
+
+    /**
+     * 去掉所有的空格
+     * @param $_str
+     *
+     * @return string|string[]|null
+     */
+    public function trim($_str)
+    {
+        return $_str =preg_replace("/\s/","",$_str);
+
     }
 
 
