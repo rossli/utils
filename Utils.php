@@ -126,7 +126,7 @@ class Utils
      *
      * @return string|string[]|null
      */
-    public function trim($_str)
+    public static function trim($_str)
     {
         return $_str =preg_replace("/\s/","",$_str);
 
