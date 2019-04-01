@@ -8,7 +8,6 @@
 
 namespace App\Utils;
 
-use Hashids\Hashids;
 
 class Utils
 {
