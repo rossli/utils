@@ -181,4 +181,17 @@ class Utils
         return $min + mt_rand() / mt_getrandmax() * ($max - $min);
     }
 
+    public static function convertName($name) :String
+    {
+        $len = mb_strlen($name);
+        if ($len === 2) {
+            return mb_substr($name, 0, 1) . '*';
+        }
+        if ($len === 3) {
+            return mb_substr($name, 0, 1) . '*' . mb_substr($name, 2, 1);
+        }
+
+        return $name;
+    }
+
 }
