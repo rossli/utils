@@ -19,6 +19,44 @@ class Utils
         return preg_match("/^1[0-9]{2}[0-9]{8}$|15[0189]{1}[0-9]{8}$|189[0-9]{8}$/", $string);
     }
 
+    //验证身份证-强度高
+    public static function checkIdCard($idcard)
+    {
+
+        // 只能是18位
+        if (strlen($idcard) != 18) {
+            return FALSE;
+        }
+
+        // 取出本体码
+        $idcard_base = substr($idcard, 0, 17);
+
+        // 取出校验码
+        $verify_code = substr($idcard, 17, 1);
+
+        // 加权因子
+        $factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+
+        // 校验码对应值
+        $verify_code_list = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+
+        // 根据前17位计算校验码
+        $total = 0;
+        for ($i = 0; $i < 17; $i++) {
+            $total += substr($idcard_base, $i, 1) * $factor[ $i ];
+        }
+
+        // 取模
+        $mod = $total % 11;
+
+        // 比较校验码
+        if ($verify_code == $verify_code_list[ $mod ]) {
+            return TRUE;
+        } else {
+            return FALSE;
+        }
+    }
+
     /**
      * @param        $url
      * @param string $method
@@ -165,17 +203,17 @@ class Utils
         $account = env('SMS_ACCOUNT_253');
         $password = env('SMS_PASSWORD_253');
         $data = [
-            'account' => $account,
+            'account'  => $account,
             'password' => $password,
-            'phone' => $phone,
-            'msg' => '【师大教科文】' . $msg,
-            'report' => $report,
+            'phone'    => $phone,
+            'msg'      => '【师大教科文】' . $msg,
+            'report'   => $report,
             'sendtime' => $send_time,
-            'uid' => $uid,
+            'uid'      => $uid,
         ];
         info('sms_data', $data);
 
-        $res = self::curl($url,'POST',$data);
+        $res = self::curl($url, 'POST', $data);
         if ($res['code'] === 0) {
             return TRUE;
         }
@@ -183,6 +221,24 @@ class Utils
         info('sms_error:' . json_encode($res));
 
         return FALSE;
+    }
+    
+    public static function randFloat($min = 0, $max = 1)
+    {
+        return $min + mt_rand() / mt_getrandmax() * ($max - $min);
+    }
+
+    public static function convertName($name) :String
+    {
+        $len = mb_strlen($name);
+        if ($len === 2) {
+            return mb_substr($name, 0, 1) . '*';
+        }
+        if ($len === 3) {
+            return mb_substr($name, 0, 1) . '*' . mb_substr($name, 2, 1);
+        }
+
+        return $name;
     }
 
 }
