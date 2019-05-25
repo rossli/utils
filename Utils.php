@@ -88,7 +88,8 @@ class Utils
      * @CustomHeaders:
      *  $curlWithHeaders = Recipe::curl("http://jsonplaceholder.typicode.com/posts", $method = "GET", $data = false,
      *     $header = array(
-     * "Accept" => "application/json",
+     * 'Accept: application/json',
+     * 'content_type: application/json',
      * ), $returnInfo = true);
      */
     public static function curl($url,
@@ -104,7 +105,7 @@ class Utils
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, TRUE);
             if ($data !== FALSE) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
             }
         } else {
             if ($data !== FALSE) {
@@ -197,7 +198,7 @@ class Utils
      * "uid" : "批次编号-场景名（英文或者拼音）" //自助通系统内使用UID判断短信使用的场景类型，可重复使用，可自定义场景名称，示例如 VerificationCode（选填参数）
      * }
      */
-    public static function sendSms253($phone, $msg, $report = TRUE, $send_time = 0, $uid = 'VerificationCode')
+    public static function sendSms253($phone, $msg, $report = TRUE, $send_time = '', $uid = 'VerificationCode')
     {
         $url = 'http://smssh1.253.com/msg/send/json';
         $account = env('SMS_ACCOUNT_253');
@@ -211,9 +212,12 @@ class Utils
             'sendtime' => $send_time,
             'uid'      => $uid,
         ];
-        info('sms_data', $data);
 
-        $res = self::curl($url, 'POST', $data);
+        $res = self::curl($url, 'POST', $data, [
+            'Content-Type: application/json; charset=utf-8',
+        ]);
+        info('res:haha' . json_encode($res));
+        $res = json_decode($res, 1);
         if ($res['code'] === 0) {
             return TRUE;
         }
@@ -228,8 +232,8 @@ class Utils
         return $min + mt_rand() / mt_getrandmax() * ($max - $min);
     }
 
-    public static function convertName($name) :String
-    {
+    public static function convertName($name)
+    : String {
         $len = mb_strlen($name);
         if ($len === 2) {
             return mb_substr($name, 0, 1) . '*';
