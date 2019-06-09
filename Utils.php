@@ -16,7 +16,12 @@ class Utils
 
     public static function isMobile($string)
     {
-        return preg_match("/^1[0-9]{2}[0-9]{8}$|15[0189]{1}[0-9]{8}$|189[0-9]{8}$/", $string);
+        return preg_match("/^[1]([3-9])[0-9]{9}$/", $string);
+    }
+
+    public static function isRealMobile($string)
+    {
+        return preg_match("/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/", $string);
     }
 
     //验证身份证-强度高
