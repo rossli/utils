@@ -185,6 +185,53 @@ class Utils
 
     }
 
+    /**
+     * @param        $phone
+     * @param        $msg
+     * @param bool   $report
+     * @param int    $send_time
+     * @param string $uid
+     *
+     * {
+     * "account" : "N6000001", //用户在253云通讯平台上申请的API账号
+     * "password" : "123456", //用户在253云通讯平台上申请的API账号对应的API密钥
+     * "msg" : "【253】您的验证码是：2530", //短信内容。长度不能超过536个字符
+     * "phone" : "15800000000", //手机号码。多个手机号码使用英文逗号分隔
+     * "sendtime" : "201704101400", //定时发送短信时间。格式为yyyyMMddHHmm，值小于或等于当前时间则立即发送，不填则默认为立即发送（选填参数）
+     * "report" : "true", //是否需要状态报告（默认为false）（选填参数）
+     * "extend" : "555", //用户自定义扩展码，纯数字，建议1-3位（选填参数）
+     * "uid" : "批次编号-场景名（英文或者拼音）" //自助通系统内使用UID判断短信使用的场景类型，可重复使用，可自定义场景名称，示例如 VerificationCode（选填参数）
+     * }
+     */
+    public static function sendSms253($phone, $msg, $report = TRUE, $send_time = '', $uid = 'VerificationCode')
+    {
+        $url = 'http://smssh1.253.com/msg/send/json';
+        $account = env('SMS_ACCOUNT_253');
+        $password = env('SMS_PASSWORD_253');
+        $data = [
+            'account'  => $account,
+            'password' => $password,
+            'phone'    => $phone,
+            'msg'      => '【师大教科文】' . $msg,
+            'report'   => $report,
+            'sendtime' => $send_time,
+            'uid'      => $uid,
+        ];
+
+        $res = self::curl($url, 'POST', $data, [
+            'Content-Type: application/json; charset=utf-8',
+        ]);
+        info('res:haha' . json_encode($res));
+        $res = json_decode($res, 1);
+        if ($res['code'] === 0) {
+            return TRUE;
+        }
+
+        info('sms_error:' . json_encode($res));
+
+        return FALSE;
+    }
+
     public static function randFloat($min = 0, $max = 1)
     {
         return $min + mt_rand() / mt_getrandmax() * ($max - $min);
@@ -248,52 +295,6 @@ class Utils
         return implode('', $strarr);
     }
 
-    /**
-     * @param        $phone
-     * @param        $msg
-     * @param bool   $report
-     * @param int    $send_time
-     * @param string $uid
-     *
-     * {
-     * "account" : "N6000001", //用户在253云通讯平台上申请的API账号
-     * "password" : "123456", //用户在253云通讯平台上申请的API账号对应的API密钥
-     * "msg" : "【253】您的验证码是：2530", //短信内容。长度不能超过536个字符
-     * "phone" : "15800000000", //手机号码。多个手机号码使用英文逗号分隔
-     * "sendtime" : "201704101400", //定时发送短信时间。格式为yyyyMMddHHmm，值小于或等于当前时间则立即发送，不填则默认为立即发送（选填参数）
-     * "report" : "true", //是否需要状态报告（默认为false）（选填参数）
-     * "extend" : "555", //用户自定义扩展码，纯数字，建议1-3位（选填参数）
-     * "uid" : "批次编号-场景名（英文或者拼音）" //自助通系统内使用UID判断短信使用的场景类型，可重复使用，可自定义场景名称，示例如 VerificationCode（选填参数）
-     * }
-     */
-    public static function sendSms253($phone, $msg, $report = TRUE, $send_time = '', $uid = 'VerificationCode')
-    {
-        $url = 'http://smssh1.253.com/msg/send/json';
-        $account = env('SMS_ACCOUNT_253');
-        $password = env('SMS_PASSWORD_253');
-        $data = [
-            'account'  => $account,
-            'password' => $password,
-            'phone'    => $phone,
-            'msg'      => '【师大教科文】' . $msg,
-            'report'   => $report,
-            'sendtime' => $send_time,
-            'uid'      => $uid,
-        ];
-
-        $res = self::curl($url, 'POST', $data, [
-            'Content-Type: application/json; charset=utf-8',
-        ]);
-        info('res:haha' . json_encode($res));
-        $res = json_decode($res, 1);
-        if ($res['code'] === 0) {
-            return TRUE;
-        }
-
-        info('sms_error:' . json_encode($res));
-
-        return FALSE;
-    }
 
 
 }
