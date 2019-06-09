@@ -27,7 +27,7 @@ class Utils
     //验证身份证-强度高
     public static function checkIdCard($idcard)
     {
-
+        $idcard = strtoupper($idcard);
         // 只能是18位
         if (strlen($idcard) != 18) {
             return FALSE;
