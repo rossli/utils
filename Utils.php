@@ -8,18 +8,26 @@
 
 namespace App\Utils;
 
+use Hashids\Hashids;
+use phpDocumentor\Reflection\Types\Self_;
+
 class Utils
 {
 
     public static function isMobile($string)
     {
-        return preg_match("/^1[0-9]{2}[0-9]{8}$|15[0189]{1}[0-9]{8}$|189[0-9]{8}$/", $string);
+        return preg_match("/^[1]([3-9])[0-9]{9}$/", $string);
+    }
+
+    public static function isRealMobile($string)
+    {
+        return preg_match("/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/", $string);
     }
 
     //验证身份证-强度高
     public static function checkIdCard($idcard)
     {
-
+        $idcard = strtoupper($idcard);
         // 只能是18位
         if (strlen($idcard) != 18) {
             return FALSE;
@@ -85,7 +93,8 @@ class Utils
      * @CustomHeaders:
      *  $curlWithHeaders = Recipe::curl("http://jsonplaceholder.typicode.com/posts", $method = "GET", $data = false,
      *     $header = array(
-     * "Accept" => "application/json",
+     * 'Accept: application/json',
+     * 'content_type: application/json',
      * ), $returnInfo = true);
      */
     public static function curl($url,
@@ -101,7 +110,7 @@ class Utils
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, TRUE);
             if ($data !== FALSE) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
             }
         } else {
             if ($data !== FALSE) {
@@ -176,12 +185,59 @@ class Utils
 
     }
 
+    /**
+     * @param        $phone
+     * @param        $msg
+     * @param bool   $report
+     * @param int    $send_time
+     * @param string $uid
+     *
+     * {
+     * "account" : "N6000001", //用户在253云通讯平台上申请的API账号
+     * "password" : "123456", //用户在253云通讯平台上申请的API账号对应的API密钥
+     * "msg" : "【253】您的验证码是：2530", //短信内容。长度不能超过536个字符
+     * "phone" : "15800000000", //手机号码。多个手机号码使用英文逗号分隔
+     * "sendtime" : "201704101400", //定时发送短信时间。格式为yyyyMMddHHmm，值小于或等于当前时间则立即发送，不填则默认为立即发送（选填参数）
+     * "report" : "true", //是否需要状态报告（默认为false）（选填参数）
+     * "extend" : "555", //用户自定义扩展码，纯数字，建议1-3位（选填参数）
+     * "uid" : "批次编号-场景名（英文或者拼音）" //自助通系统内使用UID判断短信使用的场景类型，可重复使用，可自定义场景名称，示例如 VerificationCode（选填参数）
+     * }
+     */
+    public static function sendSms253($phone, $msg, $report = TRUE, $send_time = '', $uid = 'VerificationCode')
+    {
+        $url = 'http://smssh1.253.com/msg/send/json';
+        $account = env('SMS_ACCOUNT_253');
+        $password = env('SMS_PASSWORD_253');
+        $data = [
+            'account'  => $account,
+            'password' => $password,
+            'phone'    => $phone,
+            'msg'      => '【师大教科文】' . $msg,
+            'report'   => $report,
+            'sendtime' => $send_time,
+            'uid'      => $uid,
+        ];
+
+        $res = self::curl($url, 'POST', $data, [
+            'Content-Type: application/json; charset=utf-8',
+        ]);
+        info('res:haha' . json_encode($res));
+        $res = json_decode($res, 1);
+        if ($res['code'] === 0) {
+            return TRUE;
+        }
+
+        info('sms_error:' . json_encode($res));
+
+        return FALSE;
+    }
+
     public static function randFloat($min = 0, $max = 1)
     {
         return $min + mt_rand() / mt_getrandmax() * ($max - $min);
     }
 
-    public static function convertName($name) :String
+    public static function convertName($name)
     {
         $len = mb_strlen($name);
         if ($len === 2) {
@@ -193,5 +249,52 @@ class Utils
 
         return $name;
     }
+
+    /**
+     * 将一个字符串部分字符用$re替代隐藏
+     *
+     * @param string $string 待处理的字符串
+     * @param int    $start 规定在字符串的何处开始，
+     *                            正数 - 在字符串的指定位置开始
+     *                            负数 - 在从字符串结尾的指定位置开始
+     *                            0 - 在字符串中的第一个字符处开始
+     * @param int    $length 可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
+     *                            正数 - 从 start 参数所在的位置隐藏
+     *                            负数 - 从字符串末端隐藏
+     * @param string $re 替代符
+     *
+     * @return string   处理后的字符串
+     */
+    public static function hidestr($string, $start = 0, $length = 0, $re = '*')
+    {
+        if (empty($string)) {
+            return FALSE;
+        }
+        $strarr = [];
+        $mb_strlen = mb_strlen($string);
+        while ($mb_strlen) {//循环把字符串变为数组
+            $strarr[] = mb_substr($string, 0, 1, 'utf8');
+            $string = mb_substr($string, 1, $mb_strlen, 'utf8');
+            $mb_strlen = mb_strlen($string);
+        }
+        $strlen = count($strarr);
+        $begin = $start >= 0 ? $start : ($strlen - abs($start));
+        $end = $last = $strlen - 1;
+        if ($length > 0) {
+            $end = $begin + $length - 1;
+        } elseif ($length < 0) {
+            $end -= abs($length);
+        }
+        for ($i = $begin; $i <= $end; $i++) {
+            $strarr[ $i ] = $re;
+        }
+        if ($begin >= $end || $begin >= $last || $end > $last) {
+            return FALSE;
+        }
+
+        return implode('', $strarr);
+    }
+
+
 
 }
