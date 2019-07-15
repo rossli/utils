@@ -223,7 +223,7 @@ class Utils
         ]);
         info('res:haha' . json_encode($res));
         $res = json_decode($res, 1);
-        if ($res['code'] === 0) {
+        if ($res['code'] == 0) {
             return TRUE;
         }
 
