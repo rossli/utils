@@ -21,7 +21,8 @@ class Utils
 
     public static function isRealMobile($string)
     {
-        return preg_match("/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/", $string);
+        return preg_match("/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/",
+            $string);
     }
 
     //验证身份证-强度高
@@ -295,6 +296,26 @@ class Utils
         return implode('', $strarr);
     }
 
+    public static function hashids_encode(int $id, $minHashLength = '', $alphabet = '')
+    {
+        $salt = env('HASHID_SALT', '');
+        $minHashLength = $minHashLength ?: env('HASHID_MIN', 0);
+        $alphabet = $alphabet ?: env('HASHID_ALPHABET',
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
+        $hashids = new Hashids($salt, $minHashLength, $alphabet);
 
+        return $hashids->encode($id);
+    }
+
+    public static function hashids_decode($id, $minHashLength = '', $alphabet = '')
+    {
+        $salt = env('HASHID_SALT', '');
+        $minHashLength = $minHashLength ?: env('HASHID_MIN', 0);
+        $alphabet = $alphabet ?: env('HASHID_ALPHABET',
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
+        $hashids = new Hashids($salt, $minHashLength, $alphabet);
+
+        return $hashids->decode($id); // [1]
+    }
 
 }
