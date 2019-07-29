@@ -111,7 +111,7 @@ class Utils
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, TRUE);
             if ($data !== FALSE) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
             }
         } else {
             if ($data !== FALSE) {
