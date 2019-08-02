@@ -295,6 +295,18 @@ class Utils
         return implode('', $strarr);
     }
 
+    public static function parseUrl($url,$query)
+    {
+        $parsedUrl = parse_url($url);
+        if ($parsedUrl['path'] == null) {
+            $url .= '/';
+        }
+        $separator = ($parsedUrl['query'] == NULL) ? '?' : '&';
+        $url .= $separator . $query;
+
+        return $url;
+    }
+
 
 
 }
