@@ -111,7 +111,7 @@ class Utils
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, TRUE);
             if ($data !== FALSE) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
             }
         } else {
             if ($data !== FALSE) {
@@ -218,13 +218,16 @@ class Utils
             'sendtime' => $send_time,
             'uid'      => $uid,
         ];
+        //开发环境不发短信
+        if (env('APP_DEBUG')) {
+            return TRUE;
+        }
 
         $res = self::curl($url, 'POST', $data, [
             'Content-Type: application/json; charset=utf-8',
         ]);
-        info('res:haha' . json_encode($res));
         $res = json_decode($res, 1);
-        if ($res['code'] === 0) {
+        if ($res['code'] == 0) {
             return TRUE;
         }
 
