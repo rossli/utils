@@ -305,7 +305,7 @@ class Utils
         if ($parsedUrl['path'] == null) {
             $url .= '/';
         }
-        $separator = ($parsedUrl['query'] == NULL) ? '?' : '&';
+        $separator = (!isset($parsedUrl['query'])) ? '?' : '&';
         $url .= $separator . $query;
 
         return $url;
