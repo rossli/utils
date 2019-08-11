@@ -49,14 +49,14 @@ class Utils
         // 根据前17位计算校验码
         $total = 0;
         for ($i = 0; $i < 17; $i++) {
-            $total += substr($idcard_base, $i, 1) * $factor[ $i ];
+            $total += substr($idcard_base, $i, 1) * $factor[$i];
         }
 
         // 取模
         $mod = $total % 11;
 
         // 比较校验码
-        if ($verify_code == $verify_code_list[ $mod ]) {
+        if ($verify_code == $verify_code_list[$mod]) {
             return TRUE;
         } else {
             return FALSE;
@@ -66,10 +66,10 @@ class Utils
     /**
      * @param        $url
      * @param string $method
-     * @param bool   $data
-     * @param bool   $headers
-     * @param bool   $returnInfo
-     * @param bool   $auth
+     * @param bool $data
+     * @param bool $headers
+     * @param bool $returnInfo
+     * @param bool $auth
      *
      * @return array|mixed
      * @requestGetExample $data = Utils::curl("https://api.ipify.org");
@@ -99,12 +99,13 @@ class Utils
      * ), $returnInfo = true);
      */
     public static function curl($url,
-        $method = 'GET',
-        $data = FALSE,
-        $headers = FALSE,
-        $returnInfo = FALSE,
-        $auth = FALSE
-    ) {
+                                $method = 'GET',
+                                $data = FALSE,
+                                $headers = FALSE,
+                                $returnInfo = FALSE,
+                                $auth = FALSE
+    )
+    {
         $ch = curl_init();
         $info = NULL;
         if (strtoupper($method) == 'POST') {
@@ -189,8 +190,8 @@ class Utils
     /**
      * @param        $phone
      * @param        $msg
-     * @param bool   $report
-     * @param int    $send_time
+     * @param bool $report
+     * @param int $send_time
      * @param string $uid
      *
      * {
@@ -210,13 +211,13 @@ class Utils
         $account = env('SMS_ACCOUNT_253');
         $password = env('SMS_PASSWORD_253');
         $data = [
-            'account'  => $account,
+            'account' => $account,
             'password' => $password,
-            'phone'    => $phone,
-            'msg'      => '【师大教科文】' . $msg,
-            'report'   => $report,
+            'phone' => $phone,
+            'msg' => '【师大教科文】' . $msg,
+            'report' => $report,
             'sendtime' => $send_time,
-            'uid'      => $uid,
+            'uid' => $uid,
         ];
         //开发环境不发短信
         if (env('APP_DEBUG')) {
@@ -258,11 +259,11 @@ class Utils
      * 将一个字符串部分字符用$re替代隐藏
      *
      * @param string $string 待处理的字符串
-     * @param int    $start 规定在字符串的何处开始，
+     * @param int $start 规定在字符串的何处开始，
      *                            正数 - 在字符串的指定位置开始
      *                            负数 - 在从字符串结尾的指定位置开始
      *                            0 - 在字符串中的第一个字符处开始
-     * @param int    $length 可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
+     * @param int $length 可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
      *                            正数 - 从 start 参数所在的位置隐藏
      *                            负数 - 从字符串末端隐藏
      * @param string $re 替代符
@@ -290,7 +291,7 @@ class Utils
             $end -= abs($length);
         }
         for ($i = $begin; $i <= $end; $i++) {
-            $strarr[ $i ] = $re;
+            $strarr[$i] = $re;
         }
         if ($begin >= $end || $begin >= $last || $end > $last) {
             return FALSE;
@@ -319,6 +320,18 @@ class Utils
         $hashids = new Hashids($salt, $minHashLength, $alphabet);
 
         return $hashids->decode($id); // [1]
+    }
+
+    public static function code($length = 4)
+    {
+        $str = env('HASHID_ALPHABET', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');;
+        $len = strlen($str) - 1;
+        $randstr = '';
+        for ($i = 0; $i < $length; $i++) {
+            $num = mt_rand(0, $len);
+            $randstr .= $str[$num];
+        }
+        return $randstr;
     }
 
 }
