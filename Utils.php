@@ -220,19 +220,21 @@ class Utils
             'uid' => $uid,
         ];
         //开发环境不发短信
-        if (env('APP_DEBUG')) {
+        if (env('APP_DEBUG_SMS')) {
             return TRUE;
         }
 
-        $res = self::curl($url, 'POST', $data, [
+        $res = self::curl($url, 'POST', json_encode($data), [
             'Content-Type: application/json; charset=utf-8',
         ]);
         $res = json_decode($res, 1);
+        info('sms_send_res:' . json_encode($res));
         if ($res['code'] == 0) {
+            info('sms_send_ok');
             return TRUE;
         }
 
-        info('sms_error:' . json_encode($res));
+
 
         return FALSE;
     }
@@ -336,7 +338,7 @@ class Utils
 
     public static function code($length = 4)
     {
-        $str = env('HASHID_ALPHABET', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');;
+        $str = env('HASHID_ALPHABET', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
         $len = strlen($str) - 1;
         $randstr = '';
         for ($i = 0; $i < $length; $i++) {
