@@ -220,9 +220,9 @@ class Utils
             'uid' => $uid,
         ];
         //开发环境不发短信
-        if (env('APP_DEBUG_SMS')) {
-            return TRUE;
-        }
+//        if (env('APP_DEBUG_SMS')) {
+//            return TRUE;
+//        }
 
         $res = self::curl($url, 'POST', json_encode($data), [
             'Content-Type: application/json; charset=utf-8',
