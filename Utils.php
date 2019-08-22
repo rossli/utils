@@ -221,6 +221,7 @@ class Utils
         ];
         //开发环境不发短信
         if (env('APP_DEBUG_SMS')) {
+            info('APP_DEBUG_SMS');
             return TRUE;
         }
 
