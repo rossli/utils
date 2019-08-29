@@ -223,7 +223,7 @@ class Utils
 //        if (env('APP_DEBUG_SMS')) {
 //            return TRUE;
 //        }
-
+        info('sms_data:', $data);
         $res = self::curl($url, 'POST', json_encode($data), [
             'Content-Type: application/json; charset=utf-8',
         ]);
