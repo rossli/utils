@@ -21,7 +21,8 @@ class Utils
 
     public static function isRealMobile($string)
     {
-        return preg_match("/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/", $string);
+        return preg_match("/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/",
+            $string);
     }
 
     //验证身份证-强度高
@@ -110,7 +111,7 @@ class Utils
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, TRUE);
             if ($data !== FALSE) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
             }
         } else {
             if ($data !== FALSE) {
@@ -217,11 +218,14 @@ class Utils
             'sendtime' => $send_time,
             'uid'      => $uid,
         ];
+        //开发环境不发短信
+        if (env('APP_DEBUG')) {
+            return TRUE;
+        }
 
         $res = self::curl($url, 'POST', $data, [
             'Content-Type: application/json; charset=utf-8',
         ]);
-        info('res:haha' . json_encode($res));
         $res = json_decode($res, 1);
         if ($res['code'] == 0) {
             return TRUE;
@@ -295,6 +299,38 @@ class Utils
         return implode('', $strarr);
     }
 
+    public static function parseUrl($url,$query)
+    {
+        $parsedUrl = parse_url($url);
+        if ($parsedUrl['path'] == null) {
+            $url .= '/';
+        }
+        $separator = (!isset($parsedUrl['query'])) ? '?' : '&';
+        $url .= $separator . $query;
 
+        return $url;
+    }
+
+    public static function hashids_encode(int $id, $minHashLength = '', $alphabet = '')
+    {
+        $salt = env('HASHID_SALT', '');
+        $minHashLength = $minHashLength ?: env('HASHID_MIN', 0);
+        $alphabet = $alphabet ?: env('HASHID_ALPHABET',
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
+        $hashids = new Hashids($salt, $minHashLength, $alphabet);
+
+        return $hashids->encode($id);
+    }
+
+    public static function hashids_decode($id, $minHashLength = '', $alphabet = '')
+    {
+        $salt = env('HASHID_SALT', '');
+        $minHashLength = $minHashLength ?: env('HASHID_MIN', 0);
+        $alphabet = $alphabet ?: env('HASHID_ALPHABET',
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890');
+        $hashids = new Hashids($salt, $minHashLength, $alphabet);
+
+        return $hashids->decode($id); // [1]
+    }
 
 }
