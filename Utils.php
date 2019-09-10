@@ -302,7 +302,7 @@ class Utils
     public static function parseUrl($url,$query)
     {
         $parsedUrl = parse_url($url);
-        if ($parsedUrl['path'] == null) {
+        if (!isset($parsedUrl['path']) || $parsedUrl['path'] == null) {
             $url .= '/';
         }
         $separator = (!isset($parsedUrl['query'])) ? '?' : '&';
