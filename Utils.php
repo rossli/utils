@@ -236,7 +236,6 @@ class Utils
         }
 
 
-
         return FALSE;
     }
 
@@ -303,7 +302,7 @@ class Utils
         return implode('', $strarr);
     }
 
-    public static function parseUrl($url,$query)
+    public static function parseUrl($url, $query)
     {
         $parsedUrl = parse_url($url);
         if ($parsedUrl['path'] == null) {
@@ -347,6 +346,13 @@ class Utils
             $randstr .= $str[$num];
         }
         return $randstr;
+    }
+
+    public static function birthday($card_id)
+    {
+        if (empty($card_id)) return null;
+        $bir = substr($card_id, 10, 4);
+        return $bir;
     }
 
 }
