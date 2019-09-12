@@ -221,9 +221,9 @@ class Utils
         ];
         //开发环境不发短信
         if (env('APP_DEBUG_SMS')) {
-            info('APP_DEBUG_SMS');
             return TRUE;
         }
+        info('sms_data:', $data);
 
         $res = self::curl($url, 'POST', json_encode($data), [
             'Content-Type: application/json; charset=utf-8',
@@ -305,10 +305,10 @@ class Utils
     public static function parseUrl($url, $query)
     {
         $parsedUrl = parse_url($url);
-        if ($parsedUrl['path'] == null) {
+        if (!isset($parsedUrl['path']) || $parsedUrl['path'] == null) {
             $url .= '/';
         }
-        $separator = ($parsedUrl['query'] == NULL) ? '?' : '&';
+        $separator = (!isset($parsedUrl['query'])) ? '?' : '&';
         $url .= $separator . $query;
 
         return $url;
