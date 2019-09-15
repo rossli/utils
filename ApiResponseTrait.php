@@ -39,9 +39,9 @@ trait ApiResponseTrait
      *
      * @return mixed
      */
-    public function respond($data, $header = [])
+    public function respond($data)
     {
-        return response()->json($data, $this->getStatusCode(), $header);
+        return response()->json($data);
     }
 
     /**
