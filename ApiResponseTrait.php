@@ -130,10 +130,9 @@ trait ApiResponseTrait
      *
      * @return mixed
      */
-    public function success($data, $status = "success")
+    public function success($data, $status = "success",$links=[],$meta=[])
     {
-
-        return $this->status($status, compact('data'));
+        return $this->status($status, array_filter(compact('data','links','meta')));
     }
 
     /**
