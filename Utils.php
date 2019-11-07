@@ -14,9 +14,16 @@ use phpDocumentor\Reflection\Types\Self_;
 class Utils
 {
 
+    /**
+     * 手机号码验证 (非严格)
+     * 更新时间 2019-03-06
+     * @param $string
+     *
+     * @return false|int
+     */
     public static function isMobile($string)
     {
-        return preg_match("/^[1]([3-9])[0-9]{9}$/", $string);
+        return preg_match("/^1[3|4|5|6|7|8|9][0-9]{9}$/", $string);
     }
 
     public static function isRealMobile($string)
