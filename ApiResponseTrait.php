@@ -83,7 +83,7 @@ trait ApiResponseTrait
      *  message:xxx
      *  status:'error'
      */
-    public function failed($message, $code = FoundationResponse::HTTP_BAD_REQUEST, $status = 'error')
+    public function failed(string $message, $code = FoundationResponse::HTTP_BAD_REQUEST, $status = 'error')
     {
 
         return $this->setStatusCode($code)->message($message, $status);
