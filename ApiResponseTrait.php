@@ -21,12 +21,14 @@ trait ApiResponseTrait
     }
 
     /**
-     * @param $statusCode
+     * @param      $statusCode
+     *
+     * @param null $httpCode
      *
      * @return $this
      */
     public function setStatusCode($statusCode, $httpCode = NULL)
-    {
+    : self {
         $httpCode = $httpCode ?? $statusCode;
         $this->statusCode = $statusCode;
 
@@ -35,7 +37,6 @@ trait ApiResponseTrait
 
     /**
      * @param       $data
-     * @param array $header
      *
      * @return mixed
      */
@@ -94,7 +95,7 @@ trait ApiResponseTrait
      *
      * @return mixed
      */
-    public function message($message, $status = "success")
+    public function message($message, $status = 'success')
     {
 
         return $this->status($status, [
@@ -107,7 +108,7 @@ trait ApiResponseTrait
      *
      * @return mixed
      */
-    public function internalError($message = "Internal Error!")
+    public function internalError($message = 'Internal Error!')
     {
 
         return $this->failed($message, FoundationResponse::HTTP_INTERNAL_SERVER_ERROR);
@@ -118,21 +119,24 @@ trait ApiResponseTrait
      *
      * @return mixed
      */
-    public function created($message = "created")
+    public function created($message = 'created')
     {
         return $this->setStatusCode(FoundationResponse::HTTP_CREATED)->message($message);
 
     }
 
     /**
-     * @param        $data
+     * @param array  $data
      * @param string $status
+     *
+     * @param array  $links
+     * @param array  $meta
      *
      * @return mixed
      */
-    public function success($data, $status = "success",$links=[],$meta=[])
+    public function success($data = [], $status = 'success', $links = [], $meta = [])
     {
-        return $this->status($status, array_filter(compact('data','links','meta')));
+        return $this->status($status, array_filter(compact('data', 'links', 'meta')));
     }
 
     /**
