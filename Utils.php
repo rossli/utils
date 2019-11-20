@@ -362,4 +362,12 @@ class Utils
         return $bir;
     }
 
+    public static function unicodeDecode($sting)
+    {
+        $json = '{"str":"'.$sting.'"}';
+        $arr = json_decode($json,true);
+        if(empty($arr)) return '';
+        return $arr['str'];
+    }
+
 }
