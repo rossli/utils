@@ -332,6 +332,14 @@ class Utils
         return $hashids->encode($id);
     }
 
+    /**
+     * 返回 空数组 或者 [1]
+     * @param        $id
+     * @param string $minHashLength
+     * @param string $alphabet
+     *
+     * @return array
+     */
     public static function hashids_decode($id, $minHashLength = '', $alphabet = '')
     {
         $salt = env('HASHID_SALT', '');
