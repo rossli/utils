@@ -228,6 +228,7 @@ class Utils
         ];
         //开发环境不发短信
         if (env('APP_DEBUG')) {
+            info('sms_data:DEBUG');
             return TRUE;
         }
         info('sms_data:', $data);
