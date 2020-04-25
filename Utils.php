@@ -9,6 +9,7 @@
 namespace App\Utils;
 
 use Hashids\Hashids;
+use Illuminate\Support\Facades\Storage;
 use phpDocumentor\Reflection\Types\Self_;
 
 class Utils
@@ -17,6 +18,7 @@ class Utils
     /**
      * 手机号码验证 (非严格)
      * 更新时间 2019-03-06
+     *
      * @param $string
      *
      * @return false|int
@@ -56,14 +58,14 @@ class Utils
         // 根据前17位计算校验码
         $total = 0;
         for ($i = 0; $i < 17; $i++) {
-            $total += substr($idcard_base, $i, 1) * $factor[$i];
+            $total += substr($idcard_base, $i, 1) * $factor[ $i ];
         }
 
         // 取模
         $mod = $total % 11;
 
         // 比较校验码
-        if ($verify_code == $verify_code_list[$mod]) {
+        if ($verify_code == $verify_code_list[ $mod ]) {
             return TRUE;
         } else {
             return FALSE;
@@ -73,10 +75,10 @@ class Utils
     /**
      * @param        $url
      * @param string $method
-     * @param bool $data
-     * @param bool $headers
-     * @param bool $returnInfo
-     * @param bool $auth
+     * @param bool   $data
+     * @param bool   $headers
+     * @param bool   $returnInfo
+     * @param bool   $auth
      *
      * @return array|mixed
      * @requestGetExample $data = Utils::curl("https://api.ipify.org");
@@ -106,13 +108,12 @@ class Utils
      * ), $returnInfo = true);
      */
     public static function curl($url,
-                                $method = 'GET',
-                                $data = FALSE,
-                                $headers = FALSE,
-                                $returnInfo = FALSE,
-                                $auth = FALSE
-    )
-    {
+        $method = 'GET',
+        $data = FALSE,
+        $headers = FALSE,
+        $returnInfo = FALSE,
+        $auth = FALSE
+    ) {
         $ch = curl_init();
         $info = NULL;
         if (strtoupper($method) == 'POST') {
@@ -197,8 +198,8 @@ class Utils
     /**
      * @param        $phone
      * @param        $msg
-     * @param bool $report
-     * @param int $send_time
+     * @param bool   $report
+     * @param int    $send_time
      * @param string $uid
      *
      * {
@@ -218,16 +219,17 @@ class Utils
         $account = env('SMS_ACCOUNT_253');
         $password = env('SMS_PASSWORD_253');
         $data = [
-            'account' => $account,
+            'account'  => $account,
             'password' => $password,
-            'phone' => $phone,
-            'msg' => '【师大教科文】' . $msg,
-            'report' => $report,
+            'phone'    => $phone,
+            'msg'      => '【师大教科文】' . $msg,
+            'report'   => $report,
             'sendtime' => $send_time,
-            'uid' => $uid,
+            'uid'      => $uid,
         ];
         //开发环境不发短信
         if (env('APP_DEBUG')) {
+            info('sms_data:DEBUG');
             return TRUE;
         }
         info('sms_data:', $data);
@@ -239,9 +241,9 @@ class Utils
         info('sms_send_res:' . json_encode($res));
         if ($res['code'] == 0) {
             info('sms_send_ok');
+
             return TRUE;
         }
-
 
         return FALSE;
     }
@@ -268,11 +270,11 @@ class Utils
      * 将一个字符串部分字符用$re替代隐藏
      *
      * @param string $string 待处理的字符串
-     * @param int $start 规定在字符串的何处开始，
+     * @param int    $start 规定在字符串的何处开始，
      *                            正数 - 在字符串的指定位置开始
      *                            负数 - 在从字符串结尾的指定位置开始
      *                            0 - 在字符串中的第一个字符处开始
-     * @param int $length 可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
+     * @param int    $length 可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
      *                            正数 - 从 start 参数所在的位置隐藏
      *                            负数 - 从字符串末端隐藏
      * @param string $re 替代符
@@ -300,7 +302,7 @@ class Utils
             $end -= abs($length);
         }
         for ($i = $begin; $i <= $end; $i++) {
-            $strarr[$i] = $re;
+            $strarr[ $i ] = $re;
         }
         if ($begin >= $end || $begin >= $last || $end > $last) {
             return FALSE;
@@ -312,7 +314,7 @@ class Utils
     public static function parseUrl($url, $query)
     {
         $parsedUrl = parse_url($url);
-        if (!isset($parsedUrl['path']) || $parsedUrl['path'] == null) {
+        if (!isset($parsedUrl['path']) || $parsedUrl['path'] == NULL) {
             $url .= '/';
         }
         $separator = (!isset($parsedUrl['query'])) ? '?' : '&';
@@ -334,6 +336,7 @@ class Utils
 
     /**
      * 返回 空数组 或者 [1]
+     *
      * @param        $id
      * @param string $minHashLength
      * @param string $alphabet
@@ -358,23 +361,30 @@ class Utils
         $randstr = '';
         for ($i = 0; $i < $length; $i++) {
             $num = mt_rand(0, $len);
-            $randstr .= $str[$num];
+            $randstr .= $str[ $num ];
         }
+
         return $randstr;
     }
 
     public static function birthday($card_id)
     {
-        if (empty($card_id)) return null;
+        if (empty($card_id)) {
+            return NULL;
+        }
         $bir = substr($card_id, 10, 4);
+
         return $bir;
     }
 
     public static function unicodeDecode($sting)
     {
-        $json = '{"str":"'.$sting.'"}';
-        $arr = json_decode($json,true);
-        if(empty($arr)) return '';
+        $json = '{"str":"' . $sting . '"}';
+        $arr = json_decode($json, TRUE);
+        if (empty($arr)) {
+            return '';
+        }
+
         return $arr['str'];
     }
 
@@ -387,5 +397,105 @@ class Utils
     {
         return date('YmdHis') . time();
     }
+    
+    /*
+     * 上传图片到阿里云
+     *
+     * @param  string $path   要保存的路径
+     * @param  string $file   上传的文件
+     * @param  string $drive  要使用的驱动
+     * @return  string url     图片完全路径
+     */
+    public static function uploadImage($path, $file, $drive = 'oss')
+    {
+        $disk = Storage::disk($drive);
 
+        //将图片上传到OSS中，并返回图片路径信息 值如:avatar/WsH9mBklpAQUBQB4mL.jpeg
+        $path = $disk->put($path, $file);
+
+        //由于图片不在本地，所以我们应该获取图片的完整路径，
+        //值如：https://test.oss-cn-hongkong.aliyuncs.com/avatar/8GdIcz1NaCZ.jpeg
+        return $disk->url($path);
+    }
+
+    /**
+     * 将数值金额转换为中文大写金额
+     * @param $amount float 金额(支持到分)
+     * @param $type   int   补整类型,0:到角补整;1:到元补整
+     * @return mixed 中文大写金额
+     */
+    public static function convertAmountToCn($amount, $type = 1)
+    {
+        // 判断输出的金额是否为数字或数字字符串
+        if (!is_numeric($amount)) {
+            return '要转换的金额只能为数字!';
+        }
+
+        // 金额为0,则直接输出"零元整"
+        if ($amount === 0) {
+            return '人民币零元整';
+        }
+
+        // 金额不能为负数
+        if ($amount < 0) {
+            return '要转换的金额不能为负数!';
+        }
+
+        // 金额不能超过万亿,即12位
+        if (strlen($amount) > 12) {
+            return '要转换的金额不能为万亿及更高金额!';
+        }
+
+        // 预定义中文转换的数组
+        $digital = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+        // 预定义单位转换的数组
+        $position = ['仟', '佰', '拾', '亿', '仟', '佰', '拾', '万', '仟', '佰', '拾', '元'];
+
+        // 将金额的数值字符串拆分成数组
+        $amountArr = explode('.', $amount);
+
+        // 将整数位的数值字符串拆分成数组
+        $integerArr = str_split($amountArr[0], 1);
+
+        // 将整数部分替换成大写汉字
+        $result = '人民币';
+        $integerArrLength = count($integerArr);     // 整数位数组的长度
+        $positionLength = count($position);         // 单位数组的长度
+        $zeroCount = 0;                             // 连续为0数量
+        for ($i = 0; $i < $integerArrLength; $i++) {
+            // 如果数值不为0,则正常转换
+            if ($integerArr[ $i ] !== 0) {
+                // 如果前面数字为0需要增加一个零
+                if ($zeroCount >= 1) {
+                    $result .= $digital[0];
+                }
+                $result .= $digital[ $integerArr[ $i ] ] . $position[ $positionLength - $integerArrLength + $i ];
+                $zeroCount = 0;
+            } else {
+                ++$zeroCount;
+                // 如果数值为0, 且单位是亿,万,元这三个的时候,则直接显示单位
+                if (($positionLength - $integerArrLength + $i + 1) % 4 === 0) {
+                    $result .= $position[ $positionLength - $integerArrLength + $i ];
+                }
+            }
+        }
+
+        // 如果小数位也要转换
+        if ($type === 0) {
+            // 将小数位的数值字符串拆分成数组
+            $decimalArr = str_split($amountArr[1], 1);
+            // 将角替换成大写汉字. 如果为0,则不替换
+            if ($decimalArr[0] !== 0) {
+                $result .= $digital[ $decimalArr[0] ] . '角';
+            }
+            // 将分替换成大写汉字. 如果为0,则不替换
+            if ($decimalArr[1] !== 0) {
+                $result .= $digital[ $decimalArr[1] ] . '分';
+            }
+        } else {
+            $result .= '整';
+        }
+
+        return $result;
+    }
 }
