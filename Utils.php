@@ -230,6 +230,7 @@ class Utils
         //开发环境不发短信
         if (env('APP_DEBUG')) {
             info('sms_data:DEBUG');
+
             return TRUE;
         }
         info('sms_data:', $data);
@@ -397,7 +398,7 @@ class Utils
     {
         return date('YmdHis') . time();
     }
-    
+
     /*
      * 上传图片到阿里云
      *
@@ -420,8 +421,10 @@ class Utils
 
     /**
      * 将数值金额转换为中文大写金额
+     *
      * @param $amount float 金额(支持到分)
      * @param $type   int   补整类型,0:到角补整;1:到元补整
+     *
      * @return mixed 中文大写金额
      */
     public static function convertAmountToCn($amount, $type = 1)
