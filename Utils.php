@@ -393,10 +393,10 @@ class Utils
      * 订单编号  当前时间(20190909112333)即19年9月9日11点23分33秒 + 时间戳
      * @return string
      */
-    public static function makeSn()
+    public static function makeSn($prefix = '')
     : string
     {
-        return date('YmdHis') . time();
+        return $prefix . date('YmdHis') . time();
     }
 
     /*
