@@ -9,6 +9,8 @@
 namespace App\Utils;
 
 use Hashids\Hashids;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 use phpDocumentor\Reflection\Types\Self_;
 
 class Utils
@@ -376,6 +378,18 @@ class Utils
         $arr = json_decode($json,true);
         if(empty($arr)) return '';
         return $arr['str'];
+    }
+
+    public function base64ToImage($base64,$filename)
+    {
+        preg_match("/^data:image\/(?<ext>(?:png|gif|jpg|jpeg));base64,(?<image>.+)$/", $base64, $matchings);
+        $image = base64_decode($matchings['image']);
+        Storage::disk('local')->put($filename, $image);
+        $res_oss = Storage::disk('oss')->put($filename, Storage::disk('local')->get($filename));
+        if (!$res_oss) {
+            return -1;
+        }
+        return 200;
     }
 
 }
