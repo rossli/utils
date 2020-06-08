@@ -390,7 +390,7 @@ class Utils
         return $arr['str'];
     }
 
-    public function base64ToImage($base64,$filename)
+    public static function base64ToImage($base64,$filename)
     {
         preg_match("/^data:image\/(?<ext>(?:png|gif|jpg|jpeg));base64,(?<image>.+)$/", $base64, $matchings);
         $image = base64_decode($matchings['image']);
