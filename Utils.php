@@ -394,12 +394,17 @@ class Utils
     {
         preg_match("/^data:image\/(?<ext>(?:png|gif|jpg|jpeg));base64,(?<image>.+)$/", $base64, $matchings);
         $image = base64_decode($matchings['image']);
-        Storage::disk('local')->put($filename, $image);
-        $res_oss = Storage::disk('oss')->put($filename, Storage::disk('local')->get($filename));
-        if (!$res_oss) {
-            return -1;
+        $ext = $matchings['ext'];
+        $filename=$filename.'.'.$ext;
+        $res=Storage::disk('local')->put($filename, $image);
+
+        if($res){
+            $res_oss=Storage::disk('oss')->put($filename, Storage::disk('local')->get($filename));
+            if(!$res_oss){
+                return FALSE;
+            }
         }
-        return 200;
+       return $filename;
     }
     /**
      * 订单编号  当前时间(20190909112333)即19年9月9日11点23分33秒 + 时间戳
