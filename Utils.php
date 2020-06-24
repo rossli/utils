@@ -229,7 +229,7 @@ class Utils
             'uid'      => $uid,
         ];
         //开发环境不发短信
-        if (env('APP_DEBUG')) {
+        if (env('APP_DEBUG_SMS') || env('APP_DEBUG')) {
             info('sms_data:DEBUG');
 
             return TRUE;
