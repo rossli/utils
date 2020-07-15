@@ -114,6 +114,7 @@ class Utils
         $returnInfo = FALSE,
         $auth = FALSE
     ) {
+        $url = trim($url);
         $ch = curl_init();
         $info = NULL;
         if (strtoupper($method) == 'POST') {
