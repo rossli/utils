@@ -118,7 +118,7 @@ class Utils
         $url = trim($url);
         $ch = curl_init();
         $info = NULL;
-        if (strtoupper($method) == 'POST') {
+        if (strtoupper($method) === 'POST') {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, TRUE);
             if ($data !== FALSE) {
