@@ -576,8 +576,7 @@ class Utils
     {
         $botUrl = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=' . $key;
         $res = self::curl($botUrl, 'POST', json_encode($content));
-        $res = json_decode($res);
-
+        $res = json_decode($res,1);
         return $res['errcode'] === 0;
     }
 
