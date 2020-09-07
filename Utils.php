@@ -548,4 +548,37 @@ class Utils
         return $data;
     }
 
+    /**
+     * 企业微信机器人
+     *
+     * @param $key
+     * @param $content
+     *
+     * $content = [
+     * 'msgtype'  => 'markdown',
+     * 'markdown' => [
+     * 'content' => '
+     * # 实时新增用户反馈
+     * ### 实时新增用户反馈
+     * 北京<font color="warning">132例</font>，请相关同事注意。
+     * >类型:<font color="comment">用户反馈</font>
+     * >普通用户反馈:<font color="comment">117例</font>
+     *
+     * >VIP用户反馈:<font color="comment">15例</font>
+     *
+     *
+     * [这是一个链接](http://work.weixin.qq.com/api/doc)',
+     * ],
+     * ];
+     * @return bool
+     */
+    public static function wechatBot($key, $content)
+    {
+        $botUrl = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=' . $key;
+        $res = self::curl($botUrl, 'POST', json_encode($content));
+        $res = json_decode($res);
+
+        return $res['errcode'] === 0;
+    }
+
 }
