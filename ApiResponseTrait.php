@@ -46,13 +46,15 @@ trait ApiResponseTrait
     }
 
     /**
-     * @param       $status
-     * @param array $data
-     * @param null  $code
+     * @param        $status
+     * @param array  $data
+     * @param null   $code
+     *
+     * @param string $message
      *
      * @return mixed
      */
-    public function status($status, array $data, $code = NULL)
+    public function status($status, array $data, $code = NULL, $message = '')
     {
 
         if ($code) {
@@ -61,6 +63,7 @@ trait ApiResponseTrait
         $status = [
             'status' => $status,
             'code'   => $this->statusCode,
+            'message'=> $message
         ];
 
         $data = array_merge($status, $data);
@@ -134,9 +137,9 @@ trait ApiResponseTrait
      *
      * @return mixed
      */
-    public function success($data = [], $status = 'success', $links = [], $meta = [])
+    public function success($data = [], $status = 'success', $links = [], $meta = [], string $message = '')
     {
-        return $this->status($status, array_filter(compact('data', 'links', 'meta')));
+        return $this->status($status, array_filter(compact('data', 'links', 'meta')),NULL,$message);
     }
 
     /**
