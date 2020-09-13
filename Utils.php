@@ -519,8 +519,11 @@ class Utils
         return $data;
     }
 
-    public static function limitRequest($key, $number, $seconds = 3600,$limitSeconds = 3600 ,$prefix = NULL)
+    public static function limitRequest($key, $number = 100, $seconds = 3600,$limitSeconds = 3600 ,$prefix = NULL)
     {
+        if (env('APP_DEBUG')) {
+            return 0;
+        }
         $key = $prefix . $key;
         $val = Redis::get($key);
 
