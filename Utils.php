@@ -1,14 +1,16 @@
 <?php
 /**
+ * 部分函数需要 >=PHP7.3
  * Created by PhpStorm.
  * User: SuperJu
  * Date: 2017/12/28
- * Time: ����2:02
+ * Time: 12:12:12
  */
 
 namespace App\Utils;
 
 use Hashids\Hashids;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 use phpDocumentor\Reflection\Types\Self_;
@@ -126,9 +128,10 @@ class Utils
         $returnInfo = FALSE,
         $auth = FALSE
     ) {
+        $url = trim($url);
         $ch = curl_init();
         $info = NULL;
-        if (strtoupper($method) == 'POST') {
+        if (strtoupper($method) === 'POST') {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, TRUE);
             if ($data !== FALSE) {
@@ -583,14 +586,42 @@ class Utils
      * ];
      *
      * @return bool
+     * @throws \JsonException
      */
     public static function wechatBot($key, $content)
     {
         $botUrl = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=' . $key;
-        $res = self::curl($botUrl, 'POST', json_encode($content));
-        $res = json_decode($res, 1);
+        $res = self::curl($botUrl, 'POST', json_encode($content, JSON_THROW_ON_ERROR));
+        $res = json_decode($res, 1, 512, JSON_THROW_ON_ERROR);
 
         return $res['errcode'] === 0;
+
+    }
+
+    public static function limitRequest($key, $number = 100, $seconds = 3600, $limitSeconds = 3600, $prefix = NULL)
+    {
+        if (env('APP_DEBUG')) {
+            return 0;
+        }
+        $key = $prefix . $key;
+        $val = Redis::get($key);
+
+        if ($val < $number) {
+            Redis::incr($key);
+            Redis::expire($key, $seconds);
+
+            return 0;
+        }
+
+        if ($val < 999) {
+            Redis::set($key, 999);
+            Redis::expire($key, $limitSeconds);
+
+            return $limitSeconds;
+        }
+
+        return Redis::ttl($key);
+
     }
 
     /**
