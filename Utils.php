@@ -39,6 +39,9 @@ class Utils
     public static function checkIdCard($idcard)
     {
         $idcard = strtoupper($idcard);
+        if(preg_match("/^[A-Z]\d{8}$/", $idcard)){
+            return TRUE;
+        }
         // 只能是18位
         if (strlen($idcard) != 18) {
             return FALSE;
@@ -69,6 +72,7 @@ class Utils
         if ($verify_code == $verify_code_list[$mod]) {
             return TRUE;
         } else {
+
             return FALSE;
         }
     }
