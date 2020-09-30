@@ -1,14 +1,16 @@
 <?php
 /**
+ * 部分函数需要 >=PHP7.3
  * Created by PhpStorm.
  * User: SuperJu
  * Date: 2017/12/28
- * Time: ����2:02
+ * Time: 12:12:12
  */
 
 namespace App\Utils;
 
 use Hashids\Hashids;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 use phpDocumentor\Reflection\Types\Self_;
@@ -62,14 +64,14 @@ class Utils
         // 根据前17位计算校验码
         $total = 0;
         for ($i = 0; $i < 17; $i++) {
-            $total += substr($idcard_base, $i, 1) * $factor[$i];
+            $total += substr($idcard_base, $i, 1) * $factor[ $i ];
         }
 
         // 取模
         $mod = $total % 11;
 
         // 比较校验码
-        if ($verify_code == $verify_code_list[$mod]) {
+        if ($verify_code == $verify_code_list[ $mod ]) {
             return TRUE;
         } else {
 
@@ -84,16 +86,17 @@ class Utils
         if (!$checkId) {
             return FALSE;
         }
+
         return substr($idcard, -2, 1) % 2 ? '男' : '女';
     }
 
     /**
      * @param        $url
      * @param string $method
-     * @param bool $data
-     * @param bool $headers
-     * @param bool $returnInfo
-     * @param bool $auth
+     * @param bool   $data
+     * @param bool   $headers
+     * @param bool   $returnInfo
+     * @param bool   $auth
      *
      * @return array|mixed
      * @requestGetExample $data = Utils::curl("https://api.ipify.org");
@@ -123,16 +126,16 @@ class Utils
      * ), $returnInfo = true);
      */
     public static function curl($url,
-                                $method = 'GET',
-                                $data = FALSE,
-                                $headers = FALSE,
-                                $returnInfo = FALSE,
-                                $auth = FALSE
-    )
-    {
+        $method = 'GET',
+        $data = FALSE,
+        $headers = FALSE,
+        $returnInfo = FALSE,
+        $auth = FALSE
+    ) {
+        $url = trim($url);
         $ch = curl_init();
         $info = NULL;
-        if (strtoupper($method) == 'POST') {
+        if (strtoupper($method) === 'POST') {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, TRUE);
             if ($data !== FALSE) {
@@ -214,8 +217,8 @@ class Utils
     /**
      * @param        $phone
      * @param        $msg
-     * @param bool $report
-     * @param int $send_time
+     * @param bool   $report
+     * @param int    $send_time
      * @param string $uid
      *
      * {
@@ -235,13 +238,13 @@ class Utils
         $account = env('SMS_ACCOUNT_253');
         $password = env('SMS_PASSWORD_253');
         $data = [
-            'account' => $account,
+            'account'  => $account,
             'password' => $password,
-            'phone' => $phone,
-            'msg' => '【师大教科文】' . $msg,
-            'report' => $report,
+            'phone'    => $phone,
+            'msg'      => '【师大教科文】' . $msg,
+            'report'   => $report,
             'sendtime' => $send_time,
-            'uid' => $uid,
+            'uid'      => $uid,
         ];
         //开发环境不发短信
         if (env('APP_DEBUG_SMS') || env('APP_DEBUG')) {
@@ -286,15 +289,15 @@ class Utils
     /**
      * 将一个字符串部分字符用$re替代隐藏
      *
-     * @param string $string 待处理的字符串
-     * @param int $start 规定在字符串的何处开始，
+     * @param string $string      待处理的字符串
+     * @param int    $start       规定在字符串的何处开始，
      *                            正数 - 在字符串的指定位置开始
      *                            负数 - 在从字符串结尾的指定位置开始
      *                            0 - 在字符串中的第一个字符处开始
-     * @param int $length 可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
+     * @param int    $length      可选。规定要隐藏的字符串长度。默认是直到字符串的结尾。
      *                            正数 - 从 start 参数所在的位置隐藏
      *                            负数 - 从字符串末端隐藏
-     * @param string $re 替代符
+     * @param string $re          替代符
      *
      * @return string   处理后的字符串
      */
@@ -319,7 +322,7 @@ class Utils
             $end -= abs($length);
         }
         for ($i = $begin; $i <= $end; $i++) {
-            $strarr[$i] = $re;
+            $strarr[ $i ] = $re;
         }
         if ($begin >= $end || $begin >= $last || $end > $last) {
             return FALSE;
@@ -388,7 +391,7 @@ class Utils
         $randstr = '';
         for ($i = 0; $i < $length; $i++) {
             $num = mt_rand(0, $len);
-            $randstr .= $str[$num];
+            $randstr .= $str[ $num ];
         }
 
         return $randstr;
@@ -440,8 +443,8 @@ class Utils
      *
      * @return string
      */
-    public static function makeSn($prefix = NULL): string
-    {
+    public static function makeSn($prefix = NULL)
+    : string {
         return $prefix . date('YmdHis') . time();
     }
 
@@ -513,18 +516,18 @@ class Utils
         $zeroCount = 0;                             // 连续为0数量
         for ($i = 0; $i < $integerArrLength; $i++) {
             // 如果数值不为0,则正常转换
-            if ($integerArr[$i] !== 0) {
+            if ($integerArr[ $i ] !== 0) {
                 // 如果前面数字为0需要增加一个零
                 if ($zeroCount >= 1) {
                     $result .= $digital[0];
                 }
-                $result .= $digital[$integerArr[$i]] . $position[$positionLength - $integerArrLength + $i];
+                $result .= $digital[ $integerArr[ $i ] ] . $position[ $positionLength - $integerArrLength + $i ];
                 $zeroCount = 0;
             } else {
                 ++$zeroCount;
                 // 如果数值为0, 且单位是亿,万,元这三个的时候,则直接显示单位
                 if (($positionLength - $integerArrLength + $i + 1) % 4 === 0) {
-                    $result .= $position[$positionLength - $integerArrLength + $i];
+                    $result .= $position[ $positionLength - $integerArrLength + $i ];
                 }
             }
         }
@@ -535,11 +538,11 @@ class Utils
             $decimalArr = str_split($amountArr[1], 1);
             // 将角替换成大写汉字. 如果为0,则不替换
             if ($decimalArr[0] !== 0) {
-                $result .= $digital[$decimalArr[0]] . '角';
+                $result .= $digital[ $decimalArr[0] ] . '角';
             }
             // 将分替换成大写汉字. 如果为0,则不替换
             if ($decimalArr[1] !== 0) {
-                $result .= $digital[$decimalArr[1]] . '分';
+                $result .= $digital[ $decimalArr[1] ] . '分';
             }
         } else {
             $result .= '整';
@@ -551,7 +554,7 @@ class Utils
     // 截取文章的一部分内容
     public static function cutArticle($data, $str = '...', $percent = 3 / 10)
     {
-        $data = strip_tags($data);//去除html标记
+        $data = strip_tags($data); //去除html标记
         $pattern = '/&[a-zA-Z]+;/';//去除特殊符号
         $data = preg_replace($pattern, '', $data);
 
@@ -585,14 +588,55 @@ class Utils
      * [这是一个链接](http://work.weixin.qq.com/api/doc)',
      * ],
      * ];
+     *
      * @return bool
+     * @throws \JsonException
      */
     public static function wechatBot($key, $content)
     {
         $botUrl = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=' . $key;
-        $res = self::curl($botUrl, 'POST', json_encode($content));
-        $res = json_decode($res,1);
+        $res = self::curl($botUrl, 'POST', json_encode($content, JSON_THROW_ON_ERROR));
+        $res = json_decode($res, 1, 512, JSON_THROW_ON_ERROR);
+
         return $res['errcode'] === 0;
+
+    }
+
+    public static function limitRequest($key, $number = 100, $seconds = 3600, $limitSeconds = 3600, $prefix = NULL)
+    {
+        if (env('APP_DEBUG')) {
+            return 0;
+        }
+        $key = $prefix . $key;
+        $val = Redis::get($key);
+
+        if ($val < $number) {
+            Redis::incr($key);
+            Redis::expire($key, $seconds);
+
+            return 0;
+        }
+
+        if ($val < 999) {
+            Redis::set($key, 999);
+            Redis::expire($key, $limitSeconds);
+
+            return $limitSeconds;
+        }
+
+        return Redis::ttl($key);
+
+    }
+
+    /**
+     * 检测一个字符串是否包含数字
+     * @param $string
+     *
+     * @return bool
+     */
+    public function containsNumber($string)
+    {
+        return (bool) preg_match('/[A-Za-z].*\d|\d.*[A-Za-z]/', $string);
     }
 
 }
