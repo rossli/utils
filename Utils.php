@@ -1,14 +1,18 @@
 <?php
 /**
+ * 部分函数需要 >=PHP7.3
  * Created by PhpStorm.
  * User: SuperJu
  * Date: 2017/12/28
- * Time: ����2:02
+ * Time: 12:12:12
  */
 
 namespace App\Utils;
 
 use Hashids\Hashids;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 use phpDocumentor\Reflection\Types\Self_;
 
 class Utils
@@ -37,6 +41,9 @@ class Utils
     public static function checkIdCard($idcard)
     {
         $idcard = strtoupper($idcard);
+        if(preg_match("/^[A-Z]\d{8}$/", $idcard)){
+            return TRUE;
+        }
         // 只能是18位
         if (strlen($idcard) != 18) {
             return FALSE;
@@ -67,8 +74,20 @@ class Utils
         if ($verify_code == $verify_code_list[ $mod ]) {
             return TRUE;
         } else {
+
             return FALSE;
         }
+    }
+
+    //根据身份证取 省份,生日，性别
+    public static function getSex($idcard)
+    {
+        $checkId = self::checkIdCard($idcard);
+        if (!$checkId) {
+            return FALSE;
+        }
+
+        return substr($idcard, -2, 1) % 2 ? '男' : '女';
     }
 
     /**
@@ -113,9 +132,10 @@ class Utils
         $returnInfo = FALSE,
         $auth = FALSE
     ) {
+        $url = trim($url);
         $ch = curl_init();
         $info = NULL;
-        if (strtoupper($method) == 'POST') {
+        if (strtoupper($method) === 'POST') {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, TRUE);
             if ($data !== FALSE) {
@@ -227,7 +247,9 @@ class Utils
             'uid'      => $uid,
         ];
         //开发环境不发短信
-        if (env('APP_DEBUG_SMS')) {
+        if (env('APP_DEBUG_SMS') || env('APP_DEBUG')) {
+            info('sms_data:DEBUG');
+
             return TRUE;
         }
         info('sms_data:', $data);
@@ -332,6 +354,15 @@ class Utils
         return $hashids->encode($id);
     }
 
+    /**
+     * 返回 空数组 或者 [1]
+     *
+     * @param        $id
+     * @param string $minHashLength
+     * @param string $alphabet
+     *
+     * @return array
+     */
     public static function hashids_decode($id, $minHashLength = '', $alphabet = '')
     {
         $salt = env('HASHID_SALT', '');
@@ -341,6 +372,16 @@ class Utils
         $hashids = new Hashids($salt, $minHashLength, $alphabet);
 
         return $hashids->decode($id); // [1]
+    }
+
+    public static function hashids_decode_simple($hash_id)
+    {
+        $id_arr = self::hashids_decode($hash_id);
+        if (count($id_arr)) {
+            return $id_arr[0];
+        }
+
+        return FALSE;
     }
 
     public static function code($length = 4)
@@ -451,6 +492,228 @@ class Utils
         imagepng($img, $outPath);
 
         return TRUE;
+    }
+
+    public static function base64ToImage($base64, $filename)
+    {
+        preg_match("/^data:image\/(?<ext>(?:png|gif|jpg|jpeg));base64,(?<image>.+)$/", $base64, $matchings);
+        $image = base64_decode($matchings['image']);
+        $ext = $matchings['ext'];
+        $filename = $filename . '.' . $ext;
+        $res = Storage::disk('local')->put($filename, $image);
+
+        if ($res) {
+            $res_oss = Storage::disk('oss')->put($filename, Storage::disk('local')->get($filename));
+            if (!$res_oss) {
+                return FALSE;
+            }
+        }
+
+        return $filename;
+    }
+
+    /**
+     * 订单编号  当前时间(20190909112333)即19年9月9日11点23分33秒 + 时间戳
+     *
+     * @param string $prefix
+     *
+     * @return string
+     */
+    public static function makeSn($prefix = NULL)
+    : string
+    {
+        return $prefix . date('YmdHis') . time();
+    }
+
+    /*
+     * 上传图片到阿里云
+     *
+     * @param  string $path   要保存的路径
+     * @param  string $file   上传的文件
+     * @param  string $drive  要使用的驱动
+     * @return  string url     图片完全路径
+     */
+    public static function uploadImage($path, $file, $drive = 'oss')
+    {
+        $disk = Storage::disk($drive);
+
+        //将图片上传到OSS中，并返回图片路径信息 值如:avatar/WsH9mBklpAQUBQB4mL.jpeg
+        $path = $disk->put($path, $file);
+
+        //由于图片不在本地，所以我们应该获取图片的完整路径，
+        //值如：https://test.oss-cn-hongkong.aliyuncs.com/avatar/8GdIcz1NaCZ.jpeg
+        return $disk->url($path);
+    }
+
+    /**
+     * 将数值金额转换为中文大写金额
+     *
+     * @param $amount float 金额(支持到分)
+     * @param $type   int   补整类型,0:到角补整;1:到元补整
+     *
+     * @return mixed 中文大写金额
+     */
+    public static function convertAmountToCn($amount, $type = 1)
+    {
+        // 判断输出的金额是否为数字或数字字符串
+        if (!is_numeric($amount)) {
+            return '要转换的金额只能为数字!';
+        }
+
+        // 金额为0,则直接输出"零元整"
+        if ($amount === 0) {
+            return '人民币零元整';
+        }
+
+        // 金额不能为负数
+        if ($amount < 0) {
+            return '要转换的金额不能为负数!';
+        }
+
+        // 金额不能超过万亿,即12位
+        if (strlen($amount) > 12) {
+            return '要转换的金额不能为万亿及更高金额!';
+        }
+
+        // 预定义中文转换的数组
+        $digital = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+        // 预定义单位转换的数组
+        $position = ['仟', '佰', '拾', '亿', '仟', '佰', '拾', '万', '仟', '佰', '拾', '元'];
+
+        // 将金额的数值字符串拆分成数组
+        $amountArr = explode('.', $amount);
+
+        // 将整数位的数值字符串拆分成数组
+        $integerArr = str_split($amountArr[0], 1);
+
+        // 将整数部分替换成大写汉字
+        $result = '人民币';
+        $integerArrLength = count($integerArr);     // 整数位数组的长度
+        $positionLength = count($position);         // 单位数组的长度
+        $zeroCount = 0;                             // 连续为0数量
+        for ($i = 0; $i < $integerArrLength; $i++) {
+            // 如果数值不为0,则正常转换
+            if ($integerArr[ $i ] !== 0) {
+                // 如果前面数字为0需要增加一个零
+                if ($zeroCount >= 1) {
+                    $result .= $digital[0];
+                }
+                $result .= $digital[ $integerArr[ $i ] ] . $position[ $positionLength - $integerArrLength + $i ];
+                $zeroCount = 0;
+            } else {
+                ++$zeroCount;
+                // 如果数值为0, 且单位是亿,万,元这三个的时候,则直接显示单位
+                if (($positionLength - $integerArrLength + $i + 1) % 4 === 0) {
+                    $result .= $position[ $positionLength - $integerArrLength + $i ];
+                }
+            }
+        }
+
+        // 如果小数位也要转换
+        if ($type === 0) {
+            // 将小数位的数值字符串拆分成数组
+            $decimalArr = str_split($amountArr[1], 1);
+            // 将角替换成大写汉字. 如果为0,则不替换
+            if ($decimalArr[0] !== 0) {
+                $result .= $digital[ $decimalArr[0] ] . '角';
+            }
+            // 将分替换成大写汉字. 如果为0,则不替换
+            if ($decimalArr[1] !== 0) {
+                $result .= $digital[ $decimalArr[1] ] . '分';
+            }
+        } else {
+            $result .= '整';
+        }
+
+        return $result;
+    }
+
+    // 截取文章的一部分内容
+    public static function cutArticle($data, $str = '...', $percent = 3 / 10)
+    {
+        $data = strip_tags($data); //去除html标记
+        $pattern = '/&[a-zA-Z]+;/';//去除特殊符号
+        $data = preg_replace($pattern, '', $data);
+
+        // 设置只加载三分之一的内容
+        $cut = strlen($data) * $percent;
+
+        $data = mb_strimwidth($data, 0, $cut, $str);
+
+        return $data;
+    }
+
+    /**
+     * 企业微信机器人
+     *
+     * @param $key
+     * @param $content
+     *
+     * $content = [
+     * 'msgtype'  => 'markdown',
+     * 'markdown' => [
+     * 'content' => '
+     * # 实时新增用户反馈
+     * ### 实时新增用户反馈
+     * 北京<font color="warning">132例</font>，请相关同事注意。
+     * >类型:<font color="comment">用户反馈</font>
+     * >普通用户反馈:<font color="comment">117例</font>
+     *
+     * >VIP用户反馈:<font color="comment">15例</font>
+     *
+     *
+     * [这是一个链接](http://work.weixin.qq.com/api/doc)',
+     * ],
+     * ];
+     *
+     * @return bool
+     * @throws \JsonException
+     */
+    public static function wechatBot($key, $content)
+    {
+        $botUrl = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=' . $key;
+        $res = self::curl($botUrl, 'POST', json_encode($content, JSON_THROW_ON_ERROR));
+        $res = json_decode($res, 1, 512, JSON_THROW_ON_ERROR);
+
+        return $res['errcode'] === 0;
+
+    }
+
+    public static function limitRequest($key, $number = 100, $seconds = 3600, $limitSeconds = 3600, $prefix = NULL)
+    {
+        if (env('APP_DEBUG')) {
+            return 0;
+        }
+        $key = $prefix . $key;
+        $val = Redis::get($key);
+
+        if ($val < $number) {
+            Redis::incr($key);
+            Redis::expire($key, $seconds);
+
+            return 0;
+        }
+
+        if ($val < 999) {
+            Redis::set($key, 999);
+            Redis::expire($key, $limitSeconds);
+
+            return $limitSeconds;
+        }
+
+        return Redis::ttl($key);
+
+    }
+
+    /**
+     * 检测一个字符串是否包含数字
+     * @param $string
+     *
+     * @return bool
+     */
+    public function containsNumber($string)
+    {
+        return (bool) preg_match('/[A-Za-z].*\d|\d.*[A-Za-z]/', $string);
     }
 
 }
