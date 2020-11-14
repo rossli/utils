@@ -41,7 +41,7 @@ class Utils
     public static function checkIdCard($idcard)
     {
         $idcard = strtoupper($idcard);
-        if(preg_match("/^[A-Z]\d{8}$/", $idcard)){
+        if (preg_match("/^[A-Z]\d{8}$/", $idcard)) {
             return TRUE;
         }
         // 只能是18位
@@ -520,8 +520,7 @@ class Utils
      * @return string
      */
     public static function makeSn($prefix = NULL)
-    : string
-    {
+    : string {
         return $prefix . date('YmdHis') . time();
     }
 
@@ -707,13 +706,51 @@ class Utils
 
     /**
      * 检测一个字符串是否包含数字
+     *
      * @param $string
      *
      * @return bool
      */
-    public function containsNumber($string)
+    public static function containsNumber($string)
     {
         return (bool) preg_match('/[A-Za-z].*\d|\d.*[A-Za-z]/', $string);
+    }
+
+    /**
+     * @desc arraySort php二维数组排序 按照指定的key 对数组进行自然排序
+     *
+     * @param array  $arr  将要排序的数组
+     * @param string $keys 指定排序的key
+     * @param string $type 排序类型 asc | desc
+     *
+     * @return array
+     */
+    public static function  arraySort($arr, $keys, $type = 'asc')
+    {
+        $keysvalue = $new_array = [];
+        foreach ($arr as $k => $v) {
+            $keysvalue[ $k ] = $v[ $keys ];
+        }
+
+        $type === 'asc' ? asort($keysvalue) : arsort($keysvalue);
+        foreach ($keysvalue as $k => $v) {
+            $new_array[ $k ] = $arr[ $k ];
+        }
+
+        return $new_array;
+    }
+
+
+    public static function tksort(&$array)
+    {
+        ksort($array);
+        foreach(array_keys($array) as $k)
+        {
+            if(gettype($array[$k])=="array")
+            {
+                self::tksort($array[$k]);
+            }
+        }
     }
 
 }
