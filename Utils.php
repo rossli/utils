@@ -407,6 +407,18 @@ class Utils
         return $bir;
     }
 
+    public static function birthDate($card_id)
+    {
+        if (empty($card_id)) {
+            return NULL;
+        }
+        $year = substr($card_id, 6, 4);
+        $month = substr($card_id, 10, 2);
+        $day = substr($card_id, 12, 2);
+        return $year.'-'.$month.'-'.$day;
+    }
+
+
     public static function unicodeDecode($sting)
     {
         $json = '{"str":"' . $sting . '"}';
